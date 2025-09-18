@@ -1,0 +1,64 @@
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: nestjs_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-seeder:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+    ports:
+      - "${APP_PORT}:3000"
+
+  db-seeder:
+    image: postgres:15-alpine
+    container_name: nestjs_db_seeder
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./src/seeders:/app/src/seeders
+      - ./scripts:/app/scripts
+    command: |
+      sh -c "
+        until pg_isready -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER}; do
+          sleep 2
+        done &&
+        psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /app/src/seeders/schema.sql &&
+        psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /app/src/seeders/seed.sql
+      "
+
+volumes:
+  pgdata:
+    driver: local
