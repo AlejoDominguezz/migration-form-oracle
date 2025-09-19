@@ -13,6 +13,15 @@ export interface Automotor {
   denominacion_dueno: string;
 }
 
+export interface CreateAutomotorDto {
+  dominio: string;
+  numero_chasis?: string;
+  numero_motor?: string;
+  color?: string;
+  fecha_fabricacion: number;
+  spoId: number;
+}
+
 export interface AutomotorResponse {
   data: Automotor[];
   total: number;
@@ -41,5 +50,17 @@ export class AutomotorService {
 
   deleteAutomotor(dominio: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${dominio}`);
+  }
+
+  getAutomotorByDominio(dominio: string): Observable<Automotor> {
+    return this.http.get<Automotor>(`${this.apiUrl}/${dominio}`);
+  }
+
+  createAutomotor(automotor: CreateAutomotorDto): Observable<Automotor> {
+    return this.http.post<Automotor>(this.apiUrl, automotor);
+  }
+
+  updateAutomotor(dominio: string, automotor: CreateAutomotorDto): Observable<Automotor> {
+    return this.http.put<Automotor>(`${this.apiUrl}/${dominio}`, automotor);
   }
 }
