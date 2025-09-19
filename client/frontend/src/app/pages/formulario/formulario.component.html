@@ -1,0 +1,244 @@
+<div class="p-4">
+  <p-card [header]="esEdicion ? 'Editar Automotor' : 'Nuevo Automotor'">
+    <form (ngSubmit)="guardar()" *ngIf="!loading; else loadingTemplate">
+      <div class="p-fluid">
+        <div class="grid">
+          <!-- Dominio -->
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="dominio" class="block text-900 font-medium mb-2">
+                Dominio <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="dominio"
+                [(ngModel)]="automotor.dominio"
+                name="dominio"
+                pInputText
+                required
+                class="w-full"
+                placeholder="ABC123 o AB123CD"
+                maxlength="8"
+                [disabled]="esEdicion"
+              >
+            </div>
+          </div>
+
+          <!-- CUIT Dueño -->
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="cuit_dueno" class="block text-900 font-medium mb-2">
+                CUIT Dueño <span class="text-red-500">*</span>
+              </label>
+              <div class="p-inputgroup">
+                <input
+                  type="text"
+                  id="cuit_dueno"
+                  [(ngModel)]="automotor.cuit_dueno"
+                  name="cuit_dueno"
+                  pInputText
+                  required
+                  class="w-full"
+                  placeholder="12345678901"
+                  maxlength="11"
+                >
+                <p-button
+                  icon="pi pi-search"
+                  [outlined]="true"
+                  severity="info"
+                  (onClick)="buscarSujetoPorCuit()"
+                  [loading]="loading"
+                  [disabled]="!automotor.cuit_dueno"
+                  pTooltip="Buscar sujeto por CUIT">
+                </p-button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Número Chasis -->
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="numero_chasis" class="block text-900 font-medium mb-2">N° Chasis</label>
+              <input
+                type="text"
+                id="numero_chasis"
+                [(ngModel)]="automotor.numero_chasis"
+                name="numero_chasis"
+                pInputText
+                class="w-full"
+                placeholder="Número de chasis"
+                maxlength="25"
+              >
+            </div>
+          </div>
+
+          <!-- Número Motor -->
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="numero_motor" class="block text-900 font-medium mb-2">N° Motor</label>
+              <input
+                type="text"
+                id="numero_motor"
+                [(ngModel)]="automotor.numero_motor"
+                name="numero_motor"
+                pInputText
+                class="w-full"
+                placeholder="Número de motor"
+                maxlength="25"
+              >
+            </div>
+          </div>
+
+          <!-- Color -->
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="color" class="block text-900 font-medium mb-2">Color</label>
+              <input
+                type="text"
+                id="color"
+                [(ngModel)]="automotor.color"
+                name="color"
+                pInputText
+                class="w-full"
+                placeholder="Color del vehículo"
+                maxlength="40"
+              >
+            </div>
+          </div>
+
+          <!-- Fecha Fabricación -->
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="fecha_fabricacion" class="block text-900 font-medium mb-2">
+                Fecha Fabricación <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                id="fecha_fabricacion"
+                [(ngModel)]="automotor.fecha_fabricacion"
+                name="fecha_fabricacion"
+                pInputText
+                required
+                class="w-full"
+                placeholder="YYYYMM (ej: 202312)"
+                min="190001"
+                max="999912"
+              >
+            </div>
+          </div>
+
+          <!-- Denominación Dueño (solo lectura) -->
+          <div class="col-12">
+            <div class="field">
+              <label for="denominacion_dueno" class="block text-900 font-medium mb-2">Nombre Dueño</label>
+              <input
+                type="text"
+                id="denominacion_dueno"
+                [(ngModel)]="automotor.denominacion_dueno"
+                name="denominacion_dueno"
+                pInputText
+                class="w-full"
+                readonly
+                placeholder="Se llena automáticamente al ingresar el CUIT"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-content-end gap-2 mt-4">
+          <p-button
+            type="submit"
+            [label]="esEdicion ? 'Actualizar' : 'Guardar'"
+            icon="pi pi-check"
+            severity="success"
+            [loading]="loading">
+          </p-button>
+          <p-button
+            type="button"
+            label="Cancelar"
+            icon="pi pi-times"
+            severity="secondary"
+            (onClick)="cancelar()"
+            [disabled]="loading">
+          </p-button>
+        </div>
+      </div>
+    </form>
+
+    <ng-template #loadingTemplate>
+      <div class="flex justify-content-center align-items-center p-4">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+        <span class="ml-2">Cargando automotor...</span>
+      </div>
+    </ng-template>
+  </p-card>
+
+  <p-toast></p-toast>
+
+  <!-- Modal para crear nuevo sujeto -->
+  <p-dialog
+    header="Crear Nuevo Sujeto"
+    [(visible)]="showSujetoModal"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false">
+    
+    <div class="p-fluid">
+      <div class="field">
+        <label for="modal_cuit" class="block text-900 font-medium mb-2">
+          CUIT <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          id="modal_cuit"
+          [(ngModel)]="nuevoSujeto.spoCuit"
+          name="modal_cuit"
+          pInputText
+          required
+          class="w-full"
+          placeholder="12345678901"
+          maxlength="11"
+          readonly
+        >
+      </div>
+
+      <div class="field">
+        <label for="modal_denominacion" class="block text-900 font-medium mb-2">
+          Denominación <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          id="modal_denominacion"
+          [(ngModel)]="nuevoSujeto.spoDenominacion"
+          name="modal_denominacion"
+          pInputText
+          required
+          class="w-full"
+          placeholder="Nombre o razón social"
+          maxlength="160"
+        >
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-content-end gap-2">
+        <p-button
+          label="Cancelar"
+          icon="pi pi-times"
+          severity="secondary"
+          (onClick)="cancelarCrearSujeto()"
+          [disabled]="loading">
+        </p-button>
+        <p-button
+          label="Crear Sujeto"
+          icon="pi pi-check"
+          severity="success"
+          (onClick)="crearNuevoSujeto()"
+          [loading]="loading">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>
