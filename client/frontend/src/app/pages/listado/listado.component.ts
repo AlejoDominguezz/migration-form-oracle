@@ -4,12 +4,17 @@ import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
+import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { AutomotorService, Automotor } from '../../services/automotor.service';
 
 @Component({
   selector: 'app-listado',
   standalone: true,
-  imports: [CommonModule, ButtonModule, TableModule, CardModule],
+  imports: [CommonModule, ButtonModule, TableModule, CardModule, TooltipModule, ConfirmDialogModule, ToastModule],
+  providers: [ConfirmationService, MessageService],
   templateUrl: './listado.component.html',
   styles: []
 })
@@ -21,7 +26,9 @@ export class ListadoComponent implements OnInit {
   rows = 10;
   constructor(
     private router: Router,
-    private automotorService: AutomotorService
+    private automotorService: AutomotorService,
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService
   ) {}
 
   ngOnInit() {
@@ -56,5 +63,38 @@ export class ListadoComponent implements OnInit {
 
   editarAutomotor(dominio: string) {
     this.router.navigate(['/formulario', dominio]);
+  }
+
+  eliminarAutomotor(dominio: string) {
+    this.confirmationService.confirm({
+      message: `¿Está seguro que desea eliminar el automotor ${dominio}?`,
+      header: 'Confirmar Eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Aceptar',
+      rejectLabel: 'Cancelar',
+      rejectButtonStyleClass: 'p-button-outlined',
+      accept: () => {
+        this.loading = true;
+        this.automotorService.deleteAutomotor(dominio).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: `Automotor ${dominio} eliminado correctamente`
+            });
+            this.cargarAutomotores();
+          },
+          error: (error) => {
+            console.error('Error al eliminar automotor:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'No se pudo eliminar el automotor'
+            });
+            this.loading = false;
+          }
+        });
+      }
+    });
   }
 }

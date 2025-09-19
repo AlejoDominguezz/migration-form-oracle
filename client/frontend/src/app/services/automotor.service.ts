@@ -38,4 +38,8 @@ export class AutomotorService {
     
     return this.http.get<AutomotorResponse>(this.apiUrl, { params });
   }
+
+  deleteAutomotor(dominio: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${dominio}`);
+  }
 }
