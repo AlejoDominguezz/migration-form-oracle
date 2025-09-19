@@ -1,0 +1,50 @@
+<div class="p-4">
+  <p-card [header]="esEdicion ? 'Editar Elemento' : 'Nuevo Elemento'">
+    <form (ngSubmit)="guardar()">
+      <div class="p-fluid">
+        <div class="field">
+          <label for="nombre" class="block text-900 font-medium mb-2">Nombre:</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            [(ngModel)]="elemento.nombre" 
+            name="nombre"
+            pInputText
+            required
+            class="w-full"
+          >
+        </div>
+        
+        <div class="field">
+          <label for="descripcion" class="block text-900 font-medium mb-2">Descripción:</label>
+          <textarea  
+            id="descripcion" 
+            [(ngModel)]="elemento.descripcion" 
+            name="descripcion"
+            pInputTextarea
+            rows="4"
+            class="w-full"
+          ></textarea>
+        </div>
+        
+        <div class="flex justify-content-end gap-2 mt-4">
+          <p-button 
+            type="submit" 
+            [label]="esEdicion ? 'Actualizar' : 'Crear'"
+            icon="pi pi-check"
+            severity="success">
+          </p-button>
+          <p-button 
+            type="button" 
+            label="Cancelar" 
+            icon="pi pi-times"
+            severity="secondary"
+            (onClick)="cancelar()">
+          </p-button>
+        </div>
+      </div>
+    </form>
+  </p-card>
+</div>
+
+<p-toast></p-toast>
